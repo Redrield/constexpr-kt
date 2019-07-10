@@ -35,8 +35,12 @@ class ConstExprMethodVisitor(val targetFieldNames: List<String>, val messageColl
                 val method = ownerClass.getDeclaredMethod(name)
                 val result = method.invoke(null)
                 InstructionAdapter(this).apply {
-                    when (descriptor.replace("()", "")) {
-                        "J" -> lconst(result as Long)
+                    val descriptorReturn = descriptor.replace("()", "")
+                    when {
+                        descriptorReturn == "J" -> lconst(result as Long)
+                        descriptorReturn.startsWith("L") -> {
+                            aconst(result)
+                        }
                         else -> {
                         }
                     }
