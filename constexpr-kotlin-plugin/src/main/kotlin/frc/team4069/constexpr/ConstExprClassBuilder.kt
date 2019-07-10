@@ -25,7 +25,6 @@ class ConstExprClassBuilder(val delegateBuilder: ClassBuilder, val messageCollec
         signature: String?,
         value: Any?
     ): FieldVisitor {
-
         val descriptor = origin.descriptor as? PropertyDescriptor ?: return super.newField(origin, access, name, desc, signature, value)
 
         if(!descriptor.annotations.hasAnnotation(FqName(ANNOTATION_NAME))) return super.newField(origin, access, name, desc, signature, value)
@@ -49,35 +48,10 @@ class ConstExprClassBuilder(val delegateBuilder: ClassBuilder, val messageCollec
     ): MethodVisitor {
         messageCollector.report(CompilerMessageSeverity.WARNING, "Visiting method decl of method $name")
         if(name == "<clinit>") {
+            messageCollector.report(CompilerMessageSeverity.WARNING, "All recognized constexpr fields: $targetFieldNames")
             val original = super.newMethod(origin, access, name, desc, signature, exceptions)
-            return object : MethodVisitor(Opcodes.ASM5, original) {
-                override fun visitMethodInsn(
-                    opcode: Int,
-                    owner: String?,
-                    name: String?,
-                    descriptor: String?,
-                    isInterface: Boolean
-                ) {
-                    messageCollector.report(CompilerMessageSeverity.WARNING, "Visiting method with opcode $opcode," +
-                            "owner $owner, and name $name")
-                    if(opcode == Opcodes.INVOKESTATIC && owner != null && name != null && descriptor != null && descriptor.contains("()")) {
-//                        val ownerClass = Class.forName(owner.replace("/", "."))
-//                        val method = ownerClass.getDeclaredMethod(name)
-//                        val result = method.invoke(null)
-//                        InstructionAdapter(this).apply {
-//                            when(descriptor.replace("()", "")) {
-//                                "J" -> lconst(result as Long)
-//                                else -> {}
-//                            }
-//                        }
-
-                        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
-                    }else {
-                        // Not allowing super to visit fucks stuff up
-                        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
-                    }
-                }
-            }
+            // clinit is the last thing generated in objects, therefore targetFieldNames will be filled by now
+            return ConstExprMethodVisitor(targetFieldNames, messageCollector, original)
         }
         return super.newMethod(origin, access, name, desc, signature, exceptions)
     }
