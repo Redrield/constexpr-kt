@@ -1,0 +1,5 @@
+rootProject.name = 'constexpr-kt'
+include 'gradle-plugin'
+include 'constexpr-kotlin-plugin'
+include 'test-app'
+

@@ -1,0 +1,30 @@
+buildscript {
+    repositories {
+        maven {
+            url uri('../repo')
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "frc.team4069:gradle-plugin:1.0-SNAPSHOT"
+    }
+}
+
+apply plugin: "constexpr.plugin"
+
+group 'frc.team4069'
+version '1.0-SNAPSHOT'
+
+repositories {
+    maven {
+        url uri('../repo')
+    }
+}
+
+dependencies {
+    compile project(":")
+}
+
+constexpr {
+    enabled true
+}
